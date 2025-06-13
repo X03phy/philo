@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   actions.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: x03phy <x03phy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:19 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/03/15 16:27:56 by x03phy           ###   ########.fr       */
+/*   Updated: 2025/06/13 17:02:31 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,10 +59,10 @@ void	philo_eat(t_philo *philo)
 	philo->last_meal_time = get_time_ms();
 	pthread_mutex_unlock(&philo->meal_time_lock);
 	safe_print(philo, EATING);
-	philo_sleep_check(philo, philo->table->time_to_eat);
 	pthread_mutex_lock(&philo->meal_counter_lock);
 	philo->meal_counter += 1;
 	pthread_mutex_unlock(&philo->meal_counter_lock);
+	philo_sleep_check(philo, philo->table->time_to_eat);
 	pthread_mutex_unlock(&philo->left_fork->fork);
 	pthread_mutex_unlock(&philo->right_fork->fork);
 }
