@@ -6,11 +6,11 @@
 #    By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/11 17:50:18 by ebonutto          #+#    #+#              #
-#    Updated: 2025/06/13 17:10:02 by ebonutto         ###   ########.fr        #
+#    Updated: 2025/06/13 17:10:14 by ebonutto         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = philo
+NAME = philo_bonus
 CC = cc
 CFLAGS = -Werror -Wall -Wextra -g
 INC_PATH = include/
