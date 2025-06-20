@@ -3,23 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   philosophers.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: x03phy <x03phy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:43 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/03/15 14:57:57 by x03phy           ###   ########.fr       */
+/*   Updated: 2025/06/20 15:48:53 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-static void	*philosophers(void *arg)
+static void	philosophers(t_philo *philo)
 {
-	t_philo	*philo;
-
-	philo = (t_philo *)arg;
-	pthread_mutex_lock(&philo->meal_time_lock);
+	sem_wait(&philo->meal_time_lock);
 	philo->last_meal_time = philo->table->start_time;
-	pthread_mutex_unlock(&philo->meal_time_lock);
+	sem_post(&philo->meal_time_lock);
 	synchronize_all(philo->table->start_time);
 	if (philo->philo_id % 2 == 1)
 	{
@@ -38,23 +35,23 @@ static void	*philosophers(void *arg)
 		if (is_this_the_end(philo->table) == true)
 			break ;
 	}
-	return (NULL);
 }
 
 static int	remi_sans_famille(t_table *table)
 {
 	table->start_time = get_time_ms();
-	pthread_mutex_lock(&(table->philos[0].left_fork->fork));
+	sem_wait(table->forks);
 	safe_print(&(table->philos[0]), FORKING);
 	philo_sleep_check(&(table->philos[0]), table->time_to_die);
 	safe_print(&(table->philos[0]), DYING);
-	pthread_mutex_unlock(&(table->philos[0].left_fork->fork));
+	sem_post(table->forks);
 	return (0);
 }
 
 int	dinner(t_table *table)
 {
 	int	i;
+	pid_t pid;
 
 	if (table->nb_miam == 0)
 		return (0);
@@ -64,15 +61,20 @@ int	dinner(t_table *table)
 	i = -1;
 	while (++i < table->nb_philos)
 	{
-		if (pthread_create(&table->philos[i].philo, NULL, &philosophers,
-				&(table->philos[i])) != 0)
-			return (perror("pthread_create()"), ERROR_CODE);
+		pid = fork();
+		if (pid < 0)	
+			return (perror("fork()"), ERROR_CODE);
+		if (pid == 0)
+		{	
+			philosophers(&(table->philos[i].philo));
+			kill(pid, SIGKILL);
+		}
 	}
 	if (pthread_create(&table->supervisor, NULL, &supervisor, table) != 0)
 		return (perror("pthread_create()"), ERROR_CODE);
 	i = -1;
 	while (++i < table->nb_philos)
-		pthread_join(table->philos[i].philo, NULL);
+		waitpid(-1, NULL, 0);
 	pthread_join(table->supervisor, NULL);
 	return (0);
 }

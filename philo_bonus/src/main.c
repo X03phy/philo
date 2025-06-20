@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: x03phy <x03phy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:38 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/03/14 14:58:18 by x03phy           ###   ########.fr       */
+/*   Updated: 2025/06/20 15:53:32 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,14 @@ static void	free_philo(t_table *table)
 	i = 0;
 	while (i < table->nb_philos)
 	{
-		pthread_mutex_destroy(&(table->forks[i].fork));
-		pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
+		sem_close(table->forks);
+		sem_close(&(table->philos[i].meal_time_lock));
 		i++;
 	}
 	free(table->forks);
 	free(table->philos);
-	pthread_mutex_destroy(&table->write_lock);
-	pthread_mutex_destroy(&table->end_lock);
+	sem_close(&table->write_lock);
+	sem_close(&table->end_lock);
 }
 
 int	main(int argc, char **argv)

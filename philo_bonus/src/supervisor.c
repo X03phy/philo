@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   supervisor.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: x03phy <x03phy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 17:26:26 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/03/15 14:40:54 by x03phy           ###   ########.fr       */
+/*   Updated: 2025/06/20 15:43:26 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,19 +21,19 @@ static bool	all_full_of_spaghetti(t_table *table)
 	i = 0;
 	while (i < table->nb_philos)
 	{
-		pthread_mutex_lock(&table->philos[i].meal_counter_lock);
+		sem_wait(&table->philos[i].meal_counter_lock);
 		if (table->philos[i].meal_counter < table->nb_miam)
 		{
-			pthread_mutex_unlock(&table->philos[i].meal_counter_lock);
+			sem_post(&table->philos[i].meal_counter_lock);
 			return (false);
 		}
-		pthread_mutex_unlock(&table->philos[i].meal_counter_lock);
+		sem_post(&table->philos[i].meal_counter_lock);
 		i++;
 	}
 	safe_print(&table->philos[0], FULLING);
-	pthread_mutex_lock(&table->end_lock);
+	sem_wait(&table->end_lock);
 	table->end_simulation = true;
-	pthread_mutex_unlock(&table->end_lock);
+	sem_post(&table->end_lock);
 	return (true);
 }
 
@@ -47,15 +47,15 @@ static bool	this_is_the_end(t_table *table)
 	i = 0;
 	while (i < table->nb_philos)
 	{
-		pthread_mutex_lock(&table->philos[i].meal_time_lock);
+		sem_wait(&table->philos[i].meal_time_lock);
 		time = get_time_ms() - table->philos[i].last_meal_time;
-		pthread_mutex_unlock(&table->philos[i].meal_time_lock);
+		sem_post(&table->philos[i].meal_time_lock);
 		if (time >= table->time_to_die)
 		{
 			safe_print(&table->philos[i], DYING);
-			pthread_mutex_lock(&table->end_lock);
+			sem_wait(&table->end_lock);
 			table->end_simulation = true;
-			pthread_mutex_unlock(&table->end_lock);
+			sem_post(&table->end_lock);
 			return (true);
 		}
 		i++;

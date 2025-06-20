@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:19 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/13 17:04:38 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/20 15:47:36 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,10 @@ void	safe_print(t_philo *philo, t_action action)
 {
 	time_t	time;
 
-	pthread_mutex_lock(&(philo->table->write_lock));
+	sem_wait(&(philo->table->write_lock));
 	if (is_this_the_end(philo->table) == true)
 	{
-		pthread_mutex_unlock(&(philo->table->write_lock));
+		sem_post(&(philo->table->write_lock));
 		return ;
 	}
 	time = get_time_ms() - philo->table->start_time;
@@ -36,35 +36,25 @@ void	safe_print(t_philo *philo, t_action action)
 		printf("%ldms Philosophers %d just died 💀\n", time, philo->philo_id);
 	else if (action == FULLING)
 		printf("%ldms All philosophers finished eating ⭐\n", time);
-	pthread_mutex_unlock(&(philo->table->write_lock));
+	sem_post(&(philo->table->write_lock));
 }
 
 void	philo_eat(t_philo *philo)
 {
-	if (philo->philo_id % 2 == 0)
-	{
-		pthread_mutex_lock(&philo->left_fork->fork);
-		safe_print(philo, FORKING);
-		pthread_mutex_lock(&philo->right_fork->fork);
-		safe_print(philo, FORKING);
-	}
-	else
-	{
-		pthread_mutex_lock(&philo->right_fork->fork);
-		safe_print(philo, FORKING);
-		pthread_mutex_lock(&philo->left_fork->fork);
-		safe_print(philo, FORKING);
-	}
-	pthread_mutex_lock(&philo->meal_time_lock);
+	sem_wait(philo->table->forks);
+	safe_print(philo, FORKING);
+	sem_wait(philo->table->forks);
+	safe_print(philo, FORKING);
+	sem_wait(&philo->meal_time_lock);
 	philo->last_meal_time = get_time_ms();
-	pthread_mutex_unlock(&philo->meal_time_lock);
+	sem_post(&philo->meal_time_lock);
 	safe_print(philo, EATING);
-	pthread_mutex_lock(&philo->meal_counter_lock);
+	sem_wait(&philo->meal_counter_lock);
 	philo->meal_counter += 1;
-	pthread_mutex_unlock(&philo->meal_counter_lock);
+	sem_post(&philo->meal_counter_lock);
 	philo_sleep_check(philo, philo->table->time_to_eat);
-	pthread_mutex_unlock(&philo->left_fork->fork);
-	pthread_mutex_unlock(&philo->right_fork->fork);
+	sem_post(philo->table->forks);
+	sem_post(philo->table->forks);
 }
 
 void	philo_sleep(t_philo *philo)

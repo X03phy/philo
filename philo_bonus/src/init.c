@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: x03phy <x03phy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:34 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/03/15 15:09:04 by x03phy           ###   ########.fr       */
+/*   Updated: 2025/06/20 16:39:40 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ static int	init_forks(t_table *table)
 {
 	int	i;
 
-	table->forks = malloc(sizeof(t_fork) * table->nb_philos);
+	table->forks = malloc(sizeof(sem_t) * table->nb_philos);
 	if (!table->forks)
 	{
 		perror("malloc()");
@@ -124,19 +124,26 @@ int	init_table(int argc, char **argv, t_table *table)
 		return (1);
 	if (table->nb_philos == 0)
 		return (0);
-	if (pthread_mutex_init(&(table->write_lock), NULL) != 0)
-		return (ERROR_CODE);
-	if (pthread_mutex_init(&(table->end_lock), NULL) != 0)
+	sem_unlink("/write_lock");
+	table->write_lock = sem_open("/write_lock", O_CREAT | O_EXCL, 0644, 1);
+	if (table->write_lock == SEM_FAILED)
+		return (perror("sem_open(): write_lock"), ERROR_CODE);
+	sem_unlink("/end_lock");
+	table->end_lock = sem_open("/end_lock", O_CREAT | O_EXCL, 0644, 1);
+	if (table->end_lock == SEM_FAILED)
 	{
-		pthread_mutex_destroy(&table->write_lock);
-		return (ERROR_CODE);
+		sem_close(table->write_lock);
+		sem_unlink("/write_lock");
+		return (perror("sem_open(): end_lock"), ERROR_CODE);
 	}
 	table->end_simulation = false;
 	table->everything_is_ready = false;
 	if (init_forks(table) != 0 || init_philos(table) != 0)
 	{
-		pthread_mutex_destroy(&table->write_lock);
-		pthread_mutex_destroy(&table->end_lock);
+		sem_close(table->write_lock);
+		sem_unlink("/write_lock");
+		sem_close(table->end_lock);
+		sem_unlink("/end_lock");
 		return (ERROR_CODE);
 	}
 	return (0);
