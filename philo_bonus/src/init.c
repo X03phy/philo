@@ -6,15 +6,40 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:34 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/20 16:39:40 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/20 16:57:54 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+void get_fork_name( char *name, int i )
+{
+	int		n;
+
+	if (i < 10)
+		n = 1;
+	else if ( n < 100 )
+		n = 2;
+	else
+		n = 3;
+	name[0] = '/';
+	name[1] = 'f';
+	name[2] = 'o';
+	name[3] = 'r';
+	name[4] = 'k';
+	name[5] = '_';
+	name[5 + n + 1] = '\0';
+	while ( n > 0 )
+	{
+		name[5 + n] = (i % 10) + '0';
+		i /= 10;
+		--n;
+	}
+}
 
 static int	init_forks(t_table *table)
 {
 	int	i;
+	char name[10];
 
 	table->forks = malloc(sizeof(sem_t) * table->nb_philos);
 	if (!table->forks)
@@ -25,12 +50,18 @@ static int	init_forks(t_table *table)
 	i = 0;
 	while (i < table->nb_philos)
 	{
-		table->forks[i].fork_id = i;
-		if (pthread_mutex_init(&((table->forks[i]).fork), NULL) != 0)
+		get_fork_name( name, i );
+		sem_unlink(name);
+		table->forks[i] = sem_open(name, O_CREAT | O_EXCL, 0644, 1);
+		if (table->forks[i] == SEM_FAILED)
 		{
-			perror("pthread_mutex_init()");
-			while (0 < i--)
-				pthread_mutex_destroy(&(table->forks[i].fork));
+			perror("sem_open()");
+			while (--i >= 0)
+			{
+				get_fork_name(name, i);
+				sem_close(table->forks[i]);
+				sem_unlink(name);
+			}
 			free(table->forks);
 			return (ERROR_CODE);
 		}
@@ -79,10 +110,6 @@ static int	init_philos(t_table *table)
 		memset(&table->philos[i], 0, sizeof(t_philo));
 		table->philos[i].table = table;
 		table->philos[i].philo_id = i + 1;
-		table->philos[i].left_fork = &(table->forks[i]);
-		if (table->nb_philos > 1)
-			table->philos[i].right_fork = &(table->forks[(i + 1)
-					% table->nb_philos]);
 		if (pthread_mutex_init(&(table->philos[i].meal_time_lock), NULL) != 0)
 			return (secure_fail_philos(table, false, i, false));
 		if (pthread_mutex_init(&(table->philos[i].meal_counter_lock),

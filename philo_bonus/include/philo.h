@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 17:50:16 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/20 16:02:19 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/20 16:56:48 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ typedef struct s_table
 	time_t				start_time;
 	bool				end_simulation;
 	bool				everything_is_ready;
-	sem_t				*forks;
+	sem_t				**forks;
 	t_philo				*philos;
 	sem_t				*write_lock;
 	sem_t				*end_lock;
