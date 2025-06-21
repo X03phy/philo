@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:38 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/20 15:53:32 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/21 17:32:27 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,19 +33,20 @@ int	error_message(char *message1, char *message2)
 
 static void	free_philo(t_table *table)
 {
-	int	i;
+	// int	i;
 
-	i = 0;
-	while (i < table->nb_philos)
-	{
-		sem_close(table->forks);
-		sem_close(&(table->philos[i].meal_time_lock));
-		i++;
-	}
-	free(table->forks);
-	free(table->philos);
-	sem_close(&table->write_lock);
-	sem_close(&table->end_lock);
+	// i = 0;
+	// while (i < table->nb_philos)
+	// {
+	// 	sem_close(table->forks[i]);
+	// 	sem_close(table->philos[i].meal_time_lock);
+	// 	i++;
+	// }
+	// free(table->forks);
+	// free(table->philos);
+	// sem_close(&table->write_lock);
+	// sem_close(&table->end_lock);
+	(void)table;
 }
 
 int	main(int argc, char **argv)

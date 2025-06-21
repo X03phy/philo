@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:34 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/20 16:57:54 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/21 17:35:32 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ void get_fork_name( char *name, int i )
 
 	if (i < 10)
 		n = 1;
-	else if ( n < 100 )
+	else if (i < 100)
 		n = 2;
 	else
 		n = 3;
@@ -41,7 +41,7 @@ static int	init_forks(t_table *table)
 	int	i;
 	char name[10];
 
-	table->forks = malloc(sizeof(sem_t) * table->nb_philos);
+	table->forks = malloc(sizeof(sem_t *) * table->nb_philos);
 	if (!table->forks)
 	{
 		perror("malloc()");
@@ -73,27 +73,31 @@ static int	init_forks(t_table *table)
 static int	secure_fail_philos(t_table *table, bool destroy_mtl,
 		int i, bool malloc)
 {
-	if (malloc == true)
-	{
-		perror("malloc()");
-		while (++i < table->nb_philos)
-			pthread_mutex_destroy(&(table->forks[i].fork));
-		free(table->forks);
-		return (ERROR_CODE);
-	}
-	perror("pthread_mutex_init()");
-	if (destroy_mtl == true)
-		pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
-	while (0 < i--)
-	{
-		pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
-		pthread_mutex_destroy(&(table->philos[i].meal_counter_lock));
-	}
-	free(table->philos);
-	i = -1;
-	while (++i < table->nb_philos)
-		pthread_mutex_destroy(&table->forks[i].fork);
-	free(table->forks);
+	(void)malloc;
+	(void)table;
+	(void)destroy_mtl;
+	(void)i;
+	// if (malloc == true)
+	// {
+	// 	perror("malloc()");
+	// 	while (++i < table->nb_philos)
+	// 		pthread_mutex_destroy(&(table->forks[i].fork));
+	// 	free(table->forks);
+	// 	return (ERROR_CODE);
+	// }
+	// perror("pthread_mutex_init()");
+	// if (destroy_mtl == true)
+	// 	pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
+	// while (0 < i--)
+	// {
+	// 	pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
+	// 	pthread_mutex_destroy(&(table->philos[i].meal_counter_lock));
+	// }
+	// free(table->philos);
+	// i = -1;
+	// while (++i < table->nb_philos)
+	// 	pthread_mutex_destroy(&table->forks[i].fork);
+	// free(table->forks);
 	return (ERROR_CODE);
 }
 
