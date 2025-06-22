@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "philo.h"
-void get_fork_name( char *name, int i )
+void get_name( char *name, char *what, int i )
 {
 	int		n;
 
@@ -22,10 +22,10 @@ void get_fork_name( char *name, int i )
 	else
 		n = 3;
 	name[0] = '/';
-	name[1] = 'f';
-	name[2] = 'o';
-	name[3] = 'r';
-	name[4] = 'k';
+	name[1] = what[0];
+	name[2] = what[1];
+	name[3] = what[2];
+	name[4] = what[3];
 	name[5] = '_';
 	name[5 + n + 1] = '\0';
 	while ( n > 0 )
@@ -50,7 +50,7 @@ static int	init_forks(t_table *table)
 	i = 0;
 	while (i < table->nb_philos)
 	{
-		get_fork_name( name, i );
+		get_name( name, "fork", i );
 		sem_unlink(name);
 		table->forks[i] = sem_open(name, O_CREAT | O_EXCL, 0644, 1);
 		if (table->forks[i] == SEM_FAILED)
@@ -58,7 +58,7 @@ static int	init_forks(t_table *table)
 			perror("sem_open()");
 			while (--i >= 0)
 			{
-				get_fork_name(name, i);
+				get_name( name, "fork", i );
 				sem_close(table->forks[i]);
 				sem_unlink(name);
 			}
@@ -70,55 +70,62 @@ static int	init_forks(t_table *table)
 	return (0);
 }
 
-static int	secure_fail_philos(t_table *table, bool destroy_mtl,
-		int i, bool malloc)
-{
-	(void)malloc;
-	(void)table;
-	(void)destroy_mtl;
-	(void)i;
-	// if (malloc == true)
-	// {
-	// 	perror("malloc()");
-	// 	while (++i < table->nb_philos)
-	// 		pthread_mutex_destroy(&(table->forks[i].fork));
-	// 	free(table->forks);
-	// 	return (ERROR_CODE);
-	// }
-	// perror("pthread_mutex_init()");
-	// if (destroy_mtl == true)
-	// 	pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
-	// while (0 < i--)
-	// {
-	// 	pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
-	// 	pthread_mutex_destroy(&(table->philos[i].meal_counter_lock));
-	// }
-	// free(table->philos);
-	// i = -1;
-	// while (++i < table->nb_philos)
-	// 	pthread_mutex_destroy(&table->forks[i].fork);
-	// free(table->forks);
-	return (ERROR_CODE);
-}
+// static int	secure_fail_philos(t_table *table, bool destroy_mtl,
+// 		int i, bool malloc)
+// {
+// 	(void)malloc;
+// 	(void)table;
+// 	(void)destroy_mtl;
+// 	(void)i;
+// 	// if (malloc == true)
+// 	// {
+// 	// 	perror("malloc()");
+// 	// 	while (++i < table->nb_philos)
+// 	// 		pthread_mutex_destroy(&(table->forks[i].fork));
+// 	// 	free(table->forks);
+// 	// 	return (ERROR_CODE);
+// 	// }
+// 	// perror("pthread_mutex_init()");
+// 	// if (destroy_mtl == true)
+// 	// 	pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
+// 	// while (0 < i--)
+// 	// {
+// 	// 	pthread_mutex_destroy(&(table->philos[i].meal_time_lock));
+// 	// 	pthread_mutex_destroy(&(table->philos[i].meal_counter_lock));
+// 	// }
+// 	// free(table->philos);
+// 	// i = -1;
+// 	// while (++i < table->nb_philos)
+// 	// 	pthread_mutex_destroy(&table->forks[i].fork);
+// 	// free(table->forks);
+// 	return (ERROR_CODE);
+// }
 
 static int	init_philos(t_table *table)
 {
+	char	name[10];
 	int	i;
 
 	i = -1;
 	table->philos = malloc(sizeof(t_philo) * table->nb_philos);
 	if (!table->philos)
-		return (secure_fail_philos(table, false, i, true));
+		return (ERROR_CODE);
 	while (++i < table->nb_philos)
 	{
 		memset(&table->philos[i], 0, sizeof(t_philo));
 		table->philos[i].table = table;
 		table->philos[i].philo_id = i + 1;
-		if (pthread_mutex_init(&(table->philos[i].meal_time_lock), NULL) != 0)
-			return (secure_fail_philos(table, false, i, false));
-		if (pthread_mutex_init(&(table->philos[i].meal_counter_lock),
-				NULL) != 0)
-			return (secure_fail_philos(table, false, i, false));
+
+		get_name(name, "pmtl", i);
+		sem_unlink(name);
+		table->philos[i].meal_time_lock = sem_open(name, O_CREAT | O_EXCL, 0644, 1);
+		// if (table->philos[i].meal_time_lock == SEM_FAILED)
+
+		get_name(name, "pmcl", i);
+		sem_unlink(name);
+		table->philos[i].meal_counter_lock = sem_open(name, O_CREAT | O_EXCL, 0644, 1);
+		// if (table->philos[i].meal_counter_lock == SEM_FAILED)
+
 	}
 	return (0);
 }
@@ -167,8 +174,6 @@ int	init_table(int argc, char **argv, t_table *table)
 		sem_unlink("/write_lock");
 		return (perror("sem_open(): end_lock"), ERROR_CODE);
 	}
-	table->end_simulation = false;
-	table->everything_is_ready = false;
 	if (init_forks(table) != 0 || init_philos(table) != 0)
 	{
 		sem_close(table->write_lock);

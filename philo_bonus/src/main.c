@@ -33,20 +33,27 @@ int	error_message(char *message1, char *message2)
 
 static void	free_philo(t_table *table)
 {
-	// int	i;
+	char	name[10];
+	int	i;
 
-	// i = 0;
-	// while (i < table->nb_philos)
-	// {
-	// 	sem_close(table->forks[i]);
-	// 	sem_close(table->philos[i].meal_time_lock);
-	// 	i++;
-	// }
-	// free(table->forks);
-	// free(table->philos);
-	// sem_close(&table->write_lock);
-	// sem_close(&table->end_lock);
-	(void)table;
+	i = 0;
+	while (i < table->nb_philos)
+	{
+		get_name( name, "fork", i );
+		sem_close(table->forks[i]);
+		sem_unlink(name);
+		get_name( name, "pmcl", i );
+		sem_close(table->philos[i].meal_counter_lock);
+		sem_unlink(name);
+		get_name( name, "pmtl", i );
+		sem_close(table->philos[i].meal_time_lock);
+		sem_unlink(name);
+		i++;
+	}
+	free(table->forks);
+	free(table->philos);
+	sem_close(table->write_lock);
+	sem_close(table->end_lock);
 }
 
 int	main(int argc, char **argv)

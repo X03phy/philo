@@ -25,10 +25,10 @@ bool	is_this_the_end(t_table *table)
 	bool	is_end;
 
 	is_end = false;
-	sem_wait(&table->end_lock);
+	sem_wait(table->end_lock);
 	if (table->end_simulation == true)
 		is_end = true;
-	sem_post(&table->end_lock);
+	sem_post(table->end_lock);
 	return (is_end);
 }
 

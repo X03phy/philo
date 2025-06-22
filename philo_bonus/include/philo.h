@@ -52,6 +52,9 @@
 /* For O_CREAT, ... */
 #include <fcntl.h>
 
+/* For Debug Only */
+#include <stdio.h>
+
 /* Const */
 # define ERROR_CODE -42
 
@@ -67,31 +70,29 @@ typedef struct s_table	t_table;
 typedef struct s_philo
 {
 	pid_t			philo;
-	int				philo_id;
-	int				meal_counter;
-	time_t			last_meal_time;
+	int			philo_id;
+	int			meal_counter;
+	time_t		last_meal_time;
 	sem_t			*meal_time_lock;
 	sem_t			*meal_counter_lock;
-	t_table			*table;
+	t_table		*table;
 }	t_philo;
 
 typedef struct s_table
 {
-	int					nb_philos;
-	int					time_to_die;
-	int					time_to_eat;
-	int					time_to_sleep;
-	int					nb_miam;
-	time_t				start_time;
-	bool				end_simulation;
-	bool				everything_is_ready;
-	sem_t				**forks;
-	t_philo				*philos;
-	sem_t				*write_lock;
-	sem_t				*end_lock;
-	pthread_t			supervisor;
+	int			nb_philos;
+	int			time_to_die;
+	int			time_to_eat;
+	int			time_to_sleep;
+	int			nb_miam;
+	time_t		start_time;
+	// bool			end_simulation;
+	sem_t			**forks;
+	t_philo		*philos;
+	sem_t			*write_lock;
+	sem_t			*end_lock;
+	pthread_t	supervisor;
 }	t_table;
-
 /* Enum */
 typedef enum e_action
 {
@@ -117,6 +118,7 @@ void	safe_print(t_philo *philo, t_action action);
 int		atoi_check(char *str);
 
 /* Init */
+void		get_name( char *name, char *what, int i );
 int		init_table(int argc, char **argv, t_table *table);
 
 /* Time */

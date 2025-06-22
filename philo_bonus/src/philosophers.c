@@ -14,9 +14,9 @@
 
 static void	philosophers(t_philo *philo)
 {
-	sem_wait(&philo->meal_time_lock);
+	sem_wait(philo->meal_time_lock);
 	philo->last_meal_time = philo->table->start_time;
-	sem_post(&philo->meal_time_lock);
+	sem_post(philo->meal_time_lock);
 	synchronize_all(philo->table->start_time);
 	if (philo->philo_id % 2 == 1)
 	{
@@ -40,11 +40,11 @@ static void	philosophers(t_philo *philo)
 static int	remi_sans_famille(t_table *table)
 {
 	table->start_time = get_time_ms();
-	sem_wait(table->forks);
+	sem_wait(table->forks[0]);
 	safe_print(&(table->philos[0]), FORKING);
 	philo_sleep_check(&(table->philos[0]), table->time_to_die);
 	safe_print(&(table->philos[0]), DYING);
-	sem_post(table->forks);
+	sem_post(table->forks[0]);
 	return (0);
 }
 
@@ -61,13 +61,14 @@ int	dinner(t_table *table)
 	i = -1;
 	while (++i < table->nb_philos)
 	{
+		table->philos[i].last_meal_time = table->start_time;
 		pid = fork();
 		if (pid < 0)	
-			return (perror("fork()"), ERROR_CODE);
+			return (perror("fork()"), ERROR_CODE); //  gerer le pb ici.
 		if (pid == 0)
 		{	
-			philosophers(&(table->philos[i].philo));
-			kill(pid, SIGKILL);
+			philosophers(&(table->philos[i]));
+			exit(0);
 		}
 	}
 	if (pthread_create(&table->supervisor, NULL, &supervisor, table) != 0)

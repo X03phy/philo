@@ -16,10 +16,10 @@ void	safe_print(t_philo *philo, t_action action)
 {
 	time_t	time;
 
-	sem_wait(&(philo->table->write_lock));
+	sem_wait(philo->table->write_lock);
 	if (is_this_the_end(philo->table) == true)
 	{
-		sem_post(&(philo->table->write_lock));
+		sem_post(philo->table->write_lock);
 		return ;
 	}
 	time = get_time_ms() - philo->table->start_time;
@@ -36,25 +36,25 @@ void	safe_print(t_philo *philo, t_action action)
 		printf("%ldms Philosophers %d just died 💀\n", time, philo->philo_id);
 	else if (action == FULLING)
 		printf("%ldms All philosophers finished eating ⭐\n", time);
-	sem_post(&(philo->table->write_lock));
+	sem_post(philo->table->write_lock);
 }
 
 void	philo_eat(t_philo *philo)
 {
-	sem_wait(philo->table->forks);
-	safe_print(philo, FORKING);
-	sem_wait(philo->table->forks);
-	safe_print(philo, FORKING);
-	sem_wait(&philo->meal_time_lock);
+	// sem_wait(philo->table->forks);
+	// safe_print(philo, FORKING);
+	// sem_wait(philo->table->forks);
+	// safe_print(philo, FORKING);
+	sem_wait(philo->meal_time_lock);
 	philo->last_meal_time = get_time_ms();
-	sem_post(&philo->meal_time_lock);
+	sem_post(philo->meal_time_lock);
 	safe_print(philo, EATING);
-	sem_wait(&philo->meal_counter_lock);
+	sem_wait(philo->meal_counter_lock);
 	philo->meal_counter += 1;
-	sem_post(&philo->meal_counter_lock);
+	sem_post(philo->meal_counter_lock);
 	philo_sleep_check(philo, philo->table->time_to_eat);
-	sem_post(philo->table->forks);
-	sem_post(philo->table->forks);
+	// sem_post(philo->table->forks);
+	// sem_post(philo->table->forks);
 }
 
 void	philo_sleep(t_philo *philo)
