@@ -26,25 +26,19 @@ static void	philosophers(t_philo *philo)
 	while (true)
 	{
 		philo_eat(philo);
-		if (is_this_the_end(philo->table) == true)
-			break ;
 		philo_sleep(philo);
-		if (is_this_the_end(philo->table) == true)
-			break ;
 		philo_think(philo);
-		if (is_this_the_end(philo->table) == true)
-			break ;
 	}
 }
 
 static int	remi_sans_famille(t_table *table)
 {
 	table->start_time = get_time_ms();
-	sem_wait(table->forks[0]);
+	sem_wait(table->forks);
 	safe_print(&(table->philos[0]), FORKING);
 	philo_sleep_check(&(table->philos[0]), table->time_to_die);
 	safe_print(&(table->philos[0]), DYING);
-	sem_post(table->forks[0]);
+	sem_post(table->forks);
 	return (0);
 }
 
@@ -63,19 +57,25 @@ int	dinner(t_table *table)
 	{
 		table->philos[i].last_meal_time = table->start_time;
 		pid = fork();
-		if (pid < 0)	
+		if (pid < 0)
 			return (perror("fork()"), ERROR_CODE); //  gerer le pb ici.
 		if (pid == 0)
-		{	
+		{
+			if (pthread_create(&(table->supervisor[i]), NULL, &personal_supervisor, &(table->philos[i])) != 0)
+				exit(1);
 			philosophers(&(table->philos[i]));
-			exit(0);
 		}
+		table->pids[i] = pid;
 	}
-	if (pthread_create(&table->supervisor, NULL, &supervisor, table) != 0)
-		return (perror("pthread_create()"), ERROR_CODE);
-	i = -1;
-	while (++i < table->nb_philos)
-		waitpid(-1, NULL, 0);
-	pthread_join(table->supervisor, NULL);
+	pid_t dead_pid = waitpid(-1, NULL, 0);
+	i = 0;
+	while ( i < table->nb_philos )
+	{
+		if ( table->pids[i] != dead_pid )
+			kill(table->pids[i], SIGKILL);
+		else
+			safe_print(&(table->philos[i]), DYING);
+		++i;
+	}
 	return (0);
 }

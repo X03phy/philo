@@ -39,9 +39,6 @@ static void	free_philo(t_table *table)
 	i = 0;
 	while (i < table->nb_philos)
 	{
-		get_name( name, "fork", i );
-		sem_close(table->forks[i]);
-		sem_unlink(name);
 		get_name( name, "pmcl", i );
 		sem_close(table->philos[i].meal_counter_lock);
 		sem_unlink(name);
@@ -50,8 +47,8 @@ static void	free_philo(t_table *table)
 		sem_unlink(name);
 		i++;
 	}
-	free(table->forks);
-	free(table->philos);
+	sem_close(table->forks);
+	sem_unlink(name);
 	sem_close(table->write_lock);
 	sem_close(table->end_lock);
 }

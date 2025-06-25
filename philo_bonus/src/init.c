@@ -38,35 +38,10 @@ void get_name( char *name, char *what, int i )
 
 static int	init_forks(t_table *table)
 {
-	int	i;
-	char name[10];
-
-	table->forks = malloc(sizeof(sem_t *) * table->nb_philos);
-	if (!table->forks)
-	{
-		perror("malloc()");
+	sem_unlink("/fork");
+	table->forks = sem_open("/fork", O_CREAT | O_EXCL, 0644, table->nb_philos);
+	if (table->forks == SEM_FAILED)
 		return (ERROR_CODE);
-	}
-	i = 0;
-	while (i < table->nb_philos)
-	{
-		get_name( name, "fork", i );
-		sem_unlink(name);
-		table->forks[i] = sem_open(name, O_CREAT | O_EXCL, 0644, 1);
-		if (table->forks[i] == SEM_FAILED)
-		{
-			perror("sem_open()");
-			while (--i >= 0)
-			{
-				get_name( name, "fork", i );
-				sem_close(table->forks[i]);
-				sem_unlink(name);
-			}
-			free(table->forks);
-			return (ERROR_CODE);
-		}
-		i++;
-	}
 	return (0);
 }
 
@@ -107,9 +82,6 @@ static int	init_philos(t_table *table)
 	int	i;
 
 	i = -1;
-	table->philos = malloc(sizeof(t_philo) * table->nb_philos);
-	if (!table->philos)
-		return (ERROR_CODE);
 	while (++i < table->nb_philos)
 	{
 		memset(&table->philos[i], 0, sizeof(t_philo));
@@ -125,7 +97,6 @@ static int	init_philos(t_table *table)
 		sem_unlink(name);
 		table->philos[i].meal_counter_lock = sem_open(name, O_CREAT | O_EXCL, 0644, 1);
 		// if (table->philos[i].meal_counter_lock == SEM_FAILED)
-
 	}
 	return (0);
 }

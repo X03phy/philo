@@ -86,13 +86,14 @@ typedef struct s_table
 	int			time_to_sleep;
 	int			nb_miam;
 	time_t		start_time;
-	// bool			end_simulation;
-	sem_t			**forks;
-	t_philo		*philos;
+	sem_t			*forks;
+	t_philo		philos[250];
 	sem_t			*write_lock;
 	sem_t			*end_lock;
-	pthread_t	supervisor;
+	int			pids[250];
+	pthread_t	supervisor[250];
 }	t_table;
+
 /* Enum */
 typedef enum e_action
 {
@@ -131,6 +132,7 @@ void	synchronize_all(time_t start);
 int		dinner(t_table *table);
 
 /* Supervisor */
+void	*personal_supervisor(void *arg);
 void	*supervisor(void *arg);
 
 #endif
