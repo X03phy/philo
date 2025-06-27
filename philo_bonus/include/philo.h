@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 17:50:16 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/20 16:56:48 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/27 17:32:48 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,19 +41,19 @@
 # include <time.h>
 
 /* For waitpid() */
-#include <sys/wait.h>
+# include <sys/wait.h>
 
 /* For SIGKILL */
-#include <signal.h>
+# include <signal.h>
 
 /* For semaphores */
-#include <semaphore.h>
+# include <semaphore.h>
 
 /* For O_CREAT, ... */
-#include <fcntl.h>
+# include <fcntl.h>
 
 /* For Debug Only */
-#include <stdio.h>
+# include <stdio.h>
 
 /* Const */
 # define ERROR_CODE -42
@@ -70,12 +70,13 @@ typedef struct s_table	t_table;
 typedef struct s_philo
 {
 	pid_t			philo;
-	int			philo_id;
-	int			meal_counter;
-	time_t		last_meal_time;
+	int				philo_id;
+	int				meal_counter;
+	time_t			last_meal_time;
 	sem_t			*meal_time_lock;
 	sem_t			*meal_counter_lock;
-	t_table		*table;
+	t_table			*table;
+	bool			done_eating;
 }	t_philo;
 
 typedef struct s_table
@@ -86,12 +87,17 @@ typedef struct s_table
 	int			time_to_sleep;
 	int			nb_miam;
 	time_t		start_time;
-	sem_t			*forks;
+	sem_t		*forks;
 	t_philo		philos[250];
-	sem_t			*write_lock;
-	sem_t			*end_lock;
+	sem_t		*write_lock;
+	sem_t		*miam_lock;
 	int			pids[250];
-	pthread_t	supervisor[250];
+	pthread_t	personal_supervisor[250];
+	pthread_t	global_supervisor_death;
+	pthread_t	global_supervisor_famine;
+	bool		death;
+	sem_t		*death_lock;
+	
 }	t_table;
 
 /* Enum */
@@ -119,11 +125,12 @@ void	safe_print(t_philo *philo, t_action action);
 int		atoi_check(char *str);
 
 /* Init */
-void		get_name( char *name, char *what, int i );
+void	get_name(char *name, char *what, int i);
 int		init_table(int argc, char **argv, t_table *table);
 
 /* Time */
 time_t	get_time_ms(void);
+bool	this_is_the_end(t_philo *philo);
 bool	is_this_the_end(t_table *table);
 void	philo_sleep_check(t_philo *philo, time_t sleep_time);
 void	synchronize_all(time_t start);
@@ -133,6 +140,9 @@ int		dinner(t_table *table);
 
 /* Supervisor */
 void	*personal_supervisor(void *arg);
-void	*supervisor(void *arg);
+void	*global_famine_supervisor(void *arg);
+
+/* Utils */
+void	kill_them_all(t_table *table);
 
 #endif

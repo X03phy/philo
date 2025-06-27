@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: x03phy <x03phy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:41 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/03/14 14:49:06 by x03phy           ###   ########.fr       */
+/*   Updated: 2025/06/27 14:54:26 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,4 +49,29 @@ int	atoi_check(char *str)
 		i++;
 	}
 	return ((int)nb);
+}
+
+void	get_name(char *name, char *what, int i)
+{
+	int	n;
+
+	if (i < 10)
+		n = 1;
+	else if (i < 100)
+		n = 2;
+	else
+		n = 3;
+	name[0] = '/';
+	name[1] = what[0];
+	name[2] = what[1];
+	name[3] = what[2];
+	name[4] = what[3];
+	name[5] = '_';
+	name[5 + n + 1] = '\0';
+	while (n > 0)
+	{
+		name[5 + n] = (i % 10) + '0';
+		i /= 10;
+		--n;
+	}
 }

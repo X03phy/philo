@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:43 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/26 14:24:26 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/27 17:33:10 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,9 @@ static int	remi_sans_famille(t_table *table)
 
 int	dinner(t_table *table)
 {
-	int nb;
-	int	i;
-	pid_t pid;
+	int		nb;
+	int		i;
+	pid_t	pid;
 
 	if (table->nb_miam == 0)
 		return (0);
@@ -62,32 +62,33 @@ int	dinner(t_table *table)
 			return (perror("fork()"), ERROR_CODE); //  gerer le pb ici.
 		if (pid == 0)
 		{
-			if (pthread_create(&(table->supervisor[i]), NULL, &personal_supervisor, &(table->philos[i])) != 0)
-				exit(1);
+			if (pthread_create(&(table->personal_supervisor[i]), NULL, &personal_supervisor, &(table->philos[i])) != 0)
+				exit(1); // gerer ca
 			philosophers(&(table->philos[i]));
 		}
 		table->pids[i] = pid;
 	}
+
+	if (pthread_create(&table->global_supervisor_famine, NULL, &global_famine_supervisor, table) != 0)
+		exit(1); // gerer ca
 
 	nb = 0;
 	pid_t wpid;
 
 	i = 0;
 	int status;
-	int j = -1;
-	while ( i < table->nb_philos )
+	while (i < table->nb_philos)
 	{
 		wpid = waitpid(-1, &status, 0);
-		if ( WIFEXITED(status) && WEXITSTATUS(status) == 42 )
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 42)
 		{
-			if ( i == table->nb_philos - 1 )
+			if (i == table->nb_philos - 1)
 				break;
 		}
 		else
 		{
 			printf("%ldms Philosophers %d just died 💀\n", get_time_ms() - table->start_time, WEXITSTATUS(status));
-			while ( ++j < table->nb_philos )
-				kill(table->pids[j], SIGKILL);
+			kill_them_all(table);
 			break;
 		}
 		++i;
