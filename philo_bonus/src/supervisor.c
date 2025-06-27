@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 17:26:26 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/20 15:43:26 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/26 14:54:34 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@
 // 	return (true);
 // }
 
-static bool	this_is_the_end(t_philo *philo)
+static void	this_is_the_end(t_philo *philo)
 {
 	time_t	time;
 
@@ -46,8 +46,14 @@ static bool	this_is_the_end(t_philo *philo)
 	time = get_time_ms() - philo->last_meal_time;
 	sem_post(philo->meal_time_lock);
 	if (time >= philo->table->time_to_die)
-		return (true);
-	return (false);
+		exit( philo->philo_id );
+	sem_wait(philo->meal_counter_lock);
+	if ( philo->table->nb_miam != -1 && philo->meal_counter >= philo->table->nb_miam)
+	{
+		sem_post(philo->meal_counter_lock);
+		exit(42);
+	}
+	sem_post(philo->meal_counter_lock);
 }
 
 void	*personal_supervisor(void *arg)
@@ -58,10 +64,8 @@ void	*personal_supervisor(void *arg)
 	synchronize_all(philo->table->start_time);
 	while (true)
 	{
-		if (this_is_the_end(philo) == true)
-			break ;
+		this_is_the_end(philo);
 		usleep(100);
 	}
-	exit(0);
 	return (NULL);
 }

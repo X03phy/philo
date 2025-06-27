@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:43 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/20 15:48:53 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/26 14:24:26 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ static int	remi_sans_famille(t_table *table)
 
 int	dinner(t_table *table)
 {
+	int nb;
 	int	i;
 	pid_t pid;
 
@@ -67,14 +68,28 @@ int	dinner(t_table *table)
 		}
 		table->pids[i] = pid;
 	}
-	pid_t dead_pid = waitpid(-1, NULL, 0);
+
+	nb = 0;
+	pid_t wpid;
+
 	i = 0;
+	int status;
+	int j = -1;
 	while ( i < table->nb_philos )
 	{
-		if ( table->pids[i] != dead_pid )
-			kill(table->pids[i], SIGKILL);
+		wpid = waitpid(-1, &status, 0);
+		if ( WIFEXITED(status) && WEXITSTATUS(status) == 42 )
+		{
+			if ( i == table->nb_philos - 1 )
+				break;
+		}
 		else
-			safe_print(&(table->philos[i]), DYING);
+		{
+			printf("%ldms Philosophers %d just died 💀\n", get_time_ms() - table->start_time, WEXITSTATUS(status));
+			while ( ++j < table->nb_philos )
+				kill(table->pids[j], SIGKILL);
+			break;
+		}
 		++i;
 	}
 	return (0);

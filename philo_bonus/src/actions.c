@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:19 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/20 15:47:36 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/06/26 15:02:30 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,20 @@ void	philo_eat(t_philo *philo)
 	safe_print(philo, EATING);
 	sem_wait(philo->meal_counter_lock);
 	philo->meal_counter += 1;
-	sem_post(philo->meal_counter_lock);
-	philo_sleep_check(philo, philo->table->time_to_eat);
-	sem_post(philo->table->forks);
-	sem_post(philo->table->forks);
+	if ( philo->meal_counter >= philo->table->nb_miam )
+	{
+		sem_post(philo->table->forks);
+		sem_post(philo->table->forks);
+		sem_post(philo->meal_counter_lock);
+		usleep(200);
+	}
+	else
+	{
+		sem_post(philo->meal_counter_lock);
+		philo_sleep_check(philo, philo->table->time_to_eat);
+		sem_post(philo->table->forks);
+		sem_post(philo->table->forks);
+	}
 }
 
 void	philo_sleep(t_philo *philo)
