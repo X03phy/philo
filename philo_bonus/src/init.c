@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 15:58:34 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/27 17:34:38 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/07/03 15:13:49 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ static int	parse_input(int argc, char **argv, t_table *table)
 {
 	table->nb_philos = atoi_check(argv[1]);
 	if (table->nb_philos == -1 || table->nb_philos == 0
-		|| table->nb_philos > 250)
+		|| table->nb_philos > 200)
 		return (error_message(argv[1], ": is an invalid argument\n"));
 	table->time_to_die = atoi_check(argv[2]);
 	if (table->time_to_die == -1 || table->time_to_die == 0)

@@ -6,7 +6,7 @@
 /*   By: ebonutto <ebonutto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 17:50:16 by ebonutto          #+#    #+#             */
-/*   Updated: 2025/06/27 17:32:48 by ebonutto         ###   ########.fr       */
+/*   Updated: 2025/07/03 15:13:31 by ebonutto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,11 +88,11 @@ typedef struct s_table
 	int			nb_miam;
 	time_t		start_time;
 	sem_t		*forks;
-	t_philo		philos[250];
+	t_philo		philos[200];
 	sem_t		*write_lock;
 	sem_t		*miam_lock;
-	int			pids[250];
-	pthread_t	personal_supervisor[250];
+	int			pids[200];
+	pthread_t	personal_supervisor[200];
 	pthread_t	global_supervisor_death;
 	pthread_t	global_supervisor_famine;
 	bool		death;
